@@ -85,7 +85,7 @@ class PlaylistExporter < Thor
   def add_track_to_catalog(info)
     name = clean_string(info["Name"])
     album = clean_string(info["Album"], 25)
-    genre = clean_string(info["Genre"], 20)
+    artist = clean_string(info["Artist"], 20)
     track_number = info["Track Number"] || 0
 
     begin
@@ -95,14 +95,14 @@ class PlaylistExporter < Thor
       original_file =~ /.*\.(.*)/
       file_type = $1
 
-      @catalog[genre] ||= {}
-      @catalog[genre][album] ||= []
+      @catalog[artist] ||= {}
+      @catalog[artist][album] ||= []
 
       if options.verbose?
-        puts "    Cataloging   : #{name} / #{album} / #{genre} / #{track_number}"
+        puts "    Cataloging   : #{name} / #{album} / #{artist} / #{track_number}"
       end
       target_name = ("%02d-"  % track_number) + "#{name}.#{file_type}"
-      @catalog[genre][album] << {:name => target_name, :file => original_file}
+      @catalog[artist][album] << {:name => target_name, :file => original_file}
     rescue
       puts "** Error trying to process:\n\t#{name}: #{info}"
     end
@@ -122,24 +122,24 @@ class PlaylistExporter < Thor
 
   def copy_catalog
     say "Beginning Copy", :green
-    @catalog.each do |genre, albums|
-      puts "Genre: #{genre}"
-      genre_path = "#{@target_directory}/#{genre}"
+    @catalog.each do |artist, albums|
+      puts "artist: #{artist}"
+      artist_path = "#{@target_directory}/#{artist}"
 
       unless options.debug?
-        FileUtils.mkdir(genre_path) unless File.exists?(genre_path)
+        FileUtils.mkdir(artist_path) unless File.exists?(artist_path)
       end
 
       albums.each do |album, tracks|
         puts "  Album: #{album}"
-        album_path = "#{@target_directory}/#{genre}/#{album}"
+        album_path = "#{@target_directory}/#{artist}/#{album}"
 
         unless options.debug?
           FileUtils.mkdir(album_path) unless File.exists?(album_path)
         end
 
         tracks.each do |track|
-          full_destination = "#{@target_directory}/#{genre}/#{album}/#{track[:name]}"
+          full_destination = "#{@target_directory}/#{artist}/#{album}/#{track[:name]}"
           source = track[:file]
 
           if options.verbose?
